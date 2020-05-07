@@ -56,7 +56,10 @@ public class InverseKinematics : MonoBehaviour
 {
     [SerializeField]
     private Transform origin;//Only for the purpose of constraining the rotation of the first joint
-    
+
+    [SerializeField]
+    private Boolean isRight = true;
+
     [SerializeField]
     private List<Joint> joints;
 
@@ -65,8 +68,15 @@ public class InverseKinematics : MonoBehaviour
 
     private List<float> lengths;
 
+    private int leftRight;
+
     void Awake()
     {
+        if (isRight) {
+            leftRight = 1;
+        } else {
+            leftRight = -1;
+        }
         lengths = new List<float>();
         for (int i = 0; i < joints.Count - 1; ++i)
         {
@@ -162,7 +172,7 @@ public class InverseKinematics : MonoBehaviour
     //Reorients an existing global orientation to point in a specific direction
     private Quaternion reorient(Vector3 dir, Quaternion rot)
     {
-        return Quaternion.FromToRotation(rot * Vector3.right, dir) * rot;
+        return Quaternion.FromToRotation(rot * new Vector3(leftRight, 0, 0), dir) * rot;
     }
 
     private Quaternion constrain_spin(Vector3 axis, Quaternion rot, Joint j)
@@ -179,17 +189,17 @@ public class InverseKinematics : MonoBehaviour
         Vector3 dir = to - from;
         if (j.type == JointType.hinge)
         {
-            Vector3 n = rot * ((j.axis == Axis.x) ? Vector3.right :
+            Vector3 n = rot * ((j.axis == Axis.x) ? leftRight * Vector3.right :
                                (j.axis == Axis.y) ? Vector3.up :
                                                     Vector3.forward);
             //Planar projection
             dir -= Vector3.Dot(dir, n) * n;
-            Vector3 straight = rot * Vector3.right;
+            Vector3 straight = rot * (Vector3.right * leftRight);
             float angle = Mathf.Clamp(Vector3.SignedAngle(straight, dir, n), j.thetaMin, j.thetaMax);
             return Quaternion.AngleAxis(angle, n) * straight;
         } else if (j.type == JointType.end)
         {
-            return target.rotation * Vector3.right;
+            return target.rotation * new Vector3(leftRight, 1, 1); //* (Vector3.right * leftRight);
         }
         return dir;
     }
