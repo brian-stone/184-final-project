@@ -162,7 +162,7 @@ public class InverseKinematics : MonoBehaviour
             joint_rotations[n] = reorient(q, dir, local_alignments[n]);
 
             //TODO: quick fix to make hand rotate with target
-            //joint_rotations[n] = target.rotation;
+            joint_rotations[n] = target.rotation;
 
             dif = Math.Abs(Vector3.Distance(joint_positions[n], target.position));
             ++num_loops;
